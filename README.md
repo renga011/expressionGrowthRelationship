@@ -24,7 +24,6 @@ This directory contains the code used to prepare the data analyzing the data don
 	C. Subset the genotype data to include only the 11,530 markers in Albert et al. (2018) with LD < 1.
 
 	D. Correct the expression measurements for batch and OD covariates (covariate data was sourced from Albert et al. (2018); available as a separate file in the OTHERFILES directory)
-
 	E. Formating the QTL tables of both studies to include specific data that will be useful for further analyses.
 
 
@@ -60,9 +59,42 @@ This directory contains the code used to prepare the data analyzing the data don
 Compute the expression and growth effects at all eQTLs of a gene and perform weighted correlation tests between them. Applied to all genes and traits.
 
 ### 5. Overlap of trans eQTLs and gQTLs
-5.1. Generate 1000 random gQTLs 
-Plot Figure 4, compute expected number of overlaps with hotspots using random 1000 gQTLs sprayed across the genome.
+5.1. Generate 1000 random gQTL sets across the genome.
 
+5.2. Plot Figure 4, compute expected number of overlaps with hotspots using random 1000 gQTL sets (from 5.1)
+
+### 6. Heritability estimates
+6.1. Get heritability explained by 102 the trans eQTL hotspots that were mapped by Albert et al. (2018).
+
+6.2. Get the heritability explained by 1000 sets of 102 random genetic markers for computing the expectation of the heritability explained by hotspots. (Note: we directly provide the 1000 random sets we used as an R object. If you want, you can generate your own set of 102 random genetic markers using the table of genotypes)
+
+6.3. Plot heritability explained by the hotspots for the 46 growth traits.
+
+### 7. Hotspot effect correlations
+7.1. Compute and analyze the hotspot effect correlations across the 102 trans eQTL hotspots from Albert et al. (2018) and across 1000 sets of 102 random genetic loci (similar to 6.2).
+
+7.2. Consolidate and plot the results of the hotspot effect correlations
+
+### 8. GO term enrichment
+8.1. GO term enrichment for genes with significant genetic correlation, QTL effects correlation and hotspot effects correlation.
+
+8.2. Get average genetic correlation coefficient for different groups of genes in Brauer et al. (2008) and Gasch et al. (2000)
+
+8.3. Plot Figure 6
+
+### 9. Comparitive analyses
+9.1. Get and plot the contribution of local eQTLs, trans eQTLs of a gene and the 102 trans eQTL hotspot markers to the genetic correlation.
+
+9.2. Plot the genetic correlation, QTL effects correlation and hotspot effects correlation for specific example gene (HSP12) and across all genes and traits.
+
+9.3. Compare the lists of genes with significant genetic correlation with those having sigificant QTL effects correlation and those with significant hotspot effect correlation.
+
+### 10. Mediation analyses
+10.1. Compute the mediation of the IRA2 hotspot's effect on growth in presence of hydrogen peroxide by expression of the genes regulated by the hotspot.
+
+10.2. Analyze and plot mediation results.
+
+### 11. Make supplementary tables
 
 
 
