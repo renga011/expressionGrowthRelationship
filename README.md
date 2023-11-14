@@ -12,6 +12,59 @@ For some analyses, the code is so written so as to parallelly process multiple f
 
 # The details of the different areas are as follows -
 
-### 1. 
+### 1. Data preparation
+This directory contains the code used to prepare the data analyzing the data done in this chapter. The following code operations are performed.
+
+1.1. Initial data preparation
+
+	A. Load the genotype, expression, trait and QTL data published in Albert et al. (2018) and Bloom et al. (2013).
+
+	B. Subset segregants with data in both Albert et al. (2018) and Bloom et al (2013)
+
+	C. Subset the genotype data to include only the 11,530 markers in Albert et al. (2018) with LD < 1.
+
+	D. Correct the expression measurements for batch and OD covariates (covariate data was sourced from Albert et al. (2018); available as a separate file in the OTHERFILES directory)
+
+	E. Formating the QTL tables of both studies to include specific data that will be useful for further analyses.
+
+
+1.2. Make custom color palette for the 46 traits and theme for legend and axes of all plots in this paper.
+
+### 2. Genetic correlations
+2.1. Compute genetic correlations for all gene/trait combinations.
+
+2.2. Compare genetic correlations before and after correcting for growth in the base medium used for each of the 46 traits.
+
+2.3. Perform principal components analysis across all growth traits.
+
+2.4. Downsampling analyis for computing number of significant genetic correlations at different segregant panel sizes.
+
+2.5. Plotting and analyzing the results of the genetic correlation analyses.
+
+### 3. Colocalization analyses
+3.1. Subset the genotype data to include markers with LD < 0.95
+
+3.2. Prepare the genotype, expression and trait data according to the input data format for running the colocalization function in the qtl2pleio package (Boehm et al. 2013)
+
+3.3. Split the QTLs data to individual files for parallelly performing colocalization analyses on the SLURM HPC.
+
+3.4. Code for performing the colocalization analysis.
+
+3.5. Integrate the individual colocalization results into one consolidated table.
+
+3.6. Analyze and plot the colocalization results.
+
+3.7. Plot example of a colocalized locus (diplayed in Figure 2D of the paper)
+
+### 4. QTL effect correlations
+Compute the expression and growth effects at all eQTLs of a gene and perform weighted correlation tests between them. Applied to all genes and traits.
+
+### 5. Overlap of trans eQTLs and gQTLs
+5.1. Generate 1000 random gQTLs 
+Plot Figure 4, compute expected number of overlaps with hotspots using random 1000 gQTLs sprayed across the genome.
+
+
+
+
 
 
