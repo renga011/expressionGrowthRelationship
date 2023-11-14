@@ -8,4 +8,10 @@ The scripts are all indexed in the order in which they ought to be run. Because 
 
 Our code picks up or saves R objects to the directory titled. "ROBJ", saves the plots to "PLOT" and other files like the data tables from Albert et al. (2018) or Bloom et al. (2013) that were used by us, in the directory titled "OTHERFILES". In our code, these directories are contained in a directory that is denoted by the variable results_dir. You may adjust the value of this variable to the path of your results directory. Kindly ensure that the directories titled "ROBJ" and "OTHERFILES", which are provided by us in this repository are also saved to your results directory so that the code can properly access the required data files. 
 
-For some of our analyses like our colocalization analyses, our code is so written so as to parallelly process multiple files using the SLURM high performance computing cluster provided by the Minnesota Supercomputing Institute, Univ of Minnesota, Twin Cities. The shell scripts used to run our code on the SLURM HPC cluster are also provided in the directories. These are not indexed like the R scripts in the directory as we provide them as mere templates to run our code on your respective HPC clusters.
+For some analyses, the code is so written so as to parallelly process multiple files using the SLURM high performance computing cluster provided by the Minnesota Supercomputing Institute, Univ of Minnesota, Twin Cities. The shell scripts used to run our code on the SLURM HPC cluster are also provided in the directories. These are not indexed like the R scripts in the directory as we provide them as mere templates to run our code on your respective HPC clusters.
+
+# The details of the different areas are as follows -
+
+### 1. 
+
+
