@@ -2,6 +2,7 @@ library(ggpubr)
 library(dplyr)
 library(stringr)
 library(readr)
+library(GenomicRanges)
 
 #GLOBAL VARIABLES -----
 
@@ -10,7 +11,7 @@ RObj_dir = "RObjects_092522/"
 plotting_dir = "plots_092522/"
 otherFiles_dir = "otherFiles_101522/"
 
-#global functions ----
+ #global functions ----
 addPlottingCoords=  function(QTLs){
   for(i in 1:nrow(QTLs)){
     chr_i = QTLs$chromosome[i]
@@ -35,9 +36,10 @@ hotspotData_Albert2018 = readxl::read_excel(paste0(results_dir, otherFiles_dir,"
   
 hotspotEffects_growth = readr::read_csv(paste0(results_dir, otherFiles_dir, "hotspotEffectsOnGrowth.csv"))
 
+load(paste0(results_dir, RObj_dir, "theme_legendAndAxes.rda"))
+
 #prep eQTL table----
 eQTLs = dplyr::select(eQTL_Albert2018, gene, r_expression, position_plotting, cis, chromosome)
-
 eQTLs$gene_chr = geneList_SGD$chromosome[match(eQTLs$gene, geneList_SGD$sysName)]
 eQTLs$gene_plottingPosition = geneList_SGD$plotting_position[match(eQTLs$gene, geneList_SGD$sysName)]
 eQTLs$gene_stdName = geneList_SGD$stdName[match(eQTLs$gene, geneList_SGD$sysName)]
@@ -68,9 +70,9 @@ chromosomeSizes$plotting_locus= 0.5* (chromosomeSizes$chromosomeStart_plotting +
 chromosomeSizes$label= as.character(as.roman(chromosomeSizes$chromosome))
 chromosomeSizes = dplyr::filter(chromosomeSizes, chromosome != 0)
 
-ifelse(!dir.exists(paste0(results_dir, plotting_dir, "QTLOverlap/")),
+ifelse(!(dir.exists(paste0(results_dir, plotting_dir, "QTLOverlap/"))),
        dir.create(paste0(results_dir, plotting_dir, "QTLOverlap/")),
-       NULL)
+       FALSE)
 pdf(paste0(results_dir, plotting_dir, "QTLOverlap/", "eQTLGQTLChromosomeLayout.pdf"), width = 10, height = 15)
 
 plot1 = ggplot() +
@@ -170,3 +172,73 @@ gghistogram(data = data.frame(n = expectedNoOfOverlappingGQTLs),
             xlab = "number of gQTLs overlapping trans eQTL hotspots") + 
   geom_vline(xintercept = numberOverlappingGQTLs_actual, color = "red")
 dev.off()
+
+#######
+## Reviewer comment - what proportion of 102 trans eQTL hotspots is overlapping a gQTL
+expectedNoOfOverlappingHotspots = lapply(1:1000,
+                                      FUN = function(n){
+                                        gQTL = randomGQTLs_all[[n]]
+                                        growth_gRanges = GRanges(seqnames = gQTL$chromosome,
+                                                                 IRanges(start = gQTL$CILeft, 
+                                                                         end = gQTL$CIRight),
+                                                                 condition = gQTL$trait)
+                                        overlaps_i = countOverlaps(hotspotGRanges, growth_gRanges)
+                                        return(length(which(overlaps_i != 0)))
+                                      })
+expectedNoOfOverlappingHotspots = unlist(expectedNoOfOverlappingHotspots)
+
+overlappingHotspots_Actual = countOverlaps(hotspotGRanges, growth_gRanges)
+numberOverlappingHotspots_actual = length(which(overlappingHotspots_Actual != 0))
+
+  # plot histogram
+
+pdf(paste0(results_dir, plotting_dir, "QTLOverlap/", "expectedHotspotOverlapWithGQTL_histogram.pdf"))
+gghistogram(data = data.frame(n = expectedNoOfOverlappingHotspots),
+            x = "n",
+            xlab = "number of trans eQTL hotspots overlapping gQTLs") + 
+  geom_vline(xintercept = numberOverlappingHotspots_actual, color = "red")+ xlim(80,102)
+dev.off()
+
+  #p value
+n0_hotspots = length(which(expectedNoOfOverlappingHotspots <= numberOverlappingHotspots_actual))
+p = n0_hotspots/1000
+
+#######
+## Reviewer comment: difference between the gQTLs that overlap a hotspot vs not
+
+gQTLs$hotspotOverlapStatus = ifelse(gQTLs$overlapsWithHotspots !=0, TRUE, FALSE)
+diffBetweenGQTLs = gQTLs %>% group_by(hotspotOverlapStatus) %>% 
+  summarise(avg_effectSizeMagnitude = median(abs(r_growth)), 
+            n_plus = sum(r_growth > 0), n_minus = sum(r_growth < 0), 
+            n_plus_normalized = n_plus/n(), n_minus_normalized = n_minus/n())
+
+  #do some statistical tests to establish significant difference or not.
+  ## difference in magnitude of effect size
+  
+  wilcox.test(x = abs(gQTLs$r_growth[which(gQTLs$hotspotOverlapStatus == "TRUE")]), 
+              y = abs(gQTLs$r_growth[which(gQTLs$hotspotOverlapStatus == "FALSE")]))
+  
+  # W = 33750, p = 0.017
+  
+  ## difference in direction of effect size
+  
+  fisher.test(as.matrix(dplyr::select(diffBetweenGQTLs, n_plus, n_minus)))
+  
+  # odds ratio = 0.97, p = 0.93
+  
+  ## count number per condition
+  diffBetweenGQTLs_conditionWise = gQTLs %>% 
+    group_by(Trait, hotspotOverlapStatus) %>%
+    summarize(n = n())
+  
+  pdf(paste0(results_dir, plotting_dir, "revision_figures_cellGenomics/", "gQTLs_overlappingHotspotsVsNot_conditionWiseNumber.pdf"), width = 10, height = 10)
+  ggbarplot(diffBetweenGQTLs_conditionWise,
+            x = "Trait",
+            y = "n",
+            fill = "hotspotOverlapStatus") + theme_textProperties + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+    ylab("Number of gQTLs")
+
+    dev.off()
+
+

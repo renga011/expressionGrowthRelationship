@@ -34,11 +34,11 @@ render_col_dendrogram = function(GOEnrichments_plus, GOEnrichments_minus, km){
   
   for(condition_i in colnames(traitCommonSegregants_std)){
     df_plus = GOEnrichments_plus[[condition_i]]
-    df_plus = dplyr::filter(df_plus, p < 0.001)
+    df_plus = dplyr::filter(df_plus, p < 0.001 & log2FC > 0)
     #df_plus$logFold = log2(df_plus$Count/df_plus$ExpCount)
     
     df_minus = GOEnrichments_minus[[condition_i]]
-    df_minus = dplyr::filter(df_minus, p < 0.001)
+    df_minus = dplyr::filter(df_minus, p < 0.001 & log2FC > 0)
     #df_minus$logFold = log2(df_minus$Count/df_minus$ExpCount)
 
     xPlus = df_plus$log2FC[match(row.names(GoSlimTerms), df_plus$GOID)] * 1
@@ -88,11 +88,11 @@ fn_plotGO = function(GOEnrichments_plus, GOEnrichments_minus, km,
   for(condition_i in colnames(traitCommonSegregants_std)){
     print(condition_i)
     df_plus = GOEnrichments_plus[[condition_i]]
-    df_plus = dplyr::filter(df_plus, p < 0.001)
+    df_plus = dplyr::filter(df_plus, p < 0.001 & log2FC > 0)
     #df_plus$logFold = log2(df_plus$Count/df_plus$ExpCount)
     
     df_minus = GOEnrichments_minus[[condition_i]]
-    df_minus = dplyr::filter(df_minus, p < 0.001)
+    df_minus = dplyr::filter(df_minus, p < 0.001 & log2FC > 0)
     #df_minus$logFold = log2(df_minus$Count/df_minus$ExpCount)
     
     xPlus = df_plus$log2FC[match(row.names(GoSlimTerms), df_plus$GOID)] * 1
@@ -163,6 +163,7 @@ nGenes_GC = lapply(colnames(traitCommonSegregants_std),
                      return(summary_df)
                    })
 nGenes_GC = do.call(rbind, nGenes_GC)
+
 ht_GC = fn_plotGO(GO_GC_plus, GO_GC_minus,
                   km = 3, nGenes_GC, title = "Genetic correlation")
 
@@ -214,11 +215,11 @@ GoSlimTerms = cbind(GoSlimTerms, df)
 for(condition_i in colnames(traitCommonSegregants_std)){
   print(condition_i)
   df_plus = GO_GC_plus[[condition_i]]
-  df_plus = dplyr::filter(df_plus, p < 0.001)
+  df_plus = dplyr::filter(df_plus, p < 0.001 & log2FC > 0)
   #df_plus$logFold = log2(df_plus$Count/df_plus$ExpCount)
   
   df_minus = GO_GC_minus[[condition_i]]
-  df_minus = dplyr::filter(df_minus, p < 0.001)
+  df_minus = dplyr::filter(df_minus, p < 0.001 & log2FC > 0)
   #df_minus$logFold = log2(df_minus$Count/df_minus$ExpCount)
   
   xPlus = df_plus$log2FC[match(row.names(GoSlimTerms), df_plus$GOID)] * 1

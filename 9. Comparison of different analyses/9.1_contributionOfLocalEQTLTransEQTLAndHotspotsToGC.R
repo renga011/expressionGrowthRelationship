@@ -28,6 +28,11 @@ regressOutQTLEffects = function(df_i){
   return(c("r_out" = r_out, "p_out" = p_out))
 } #df_i is data frame with the genotype vectors, growth and expression vectors
 
+sampleRandomMarkerSetOfGivenSize = function(n){
+  marker_set = sample(colnames(genotypesCommonSegregants), size = n)
+  return(marker_set)
+}
+
 regressOutQTLEffectsAndComputePhenoR = function(gene_i, condition_i){
   print(gene_i)
   localEQTLs = dplyr::filter(eQTL_Albert2018, gene== gene_i & cis == "TRUE")
@@ -70,7 +75,7 @@ regressOutQTLEffectsAndComputePhenoR = function(gene_i, condition_i){
     hotspotOut = regressOutQTLEffects(df_hotspot)
   
   return(c("r_old" = r_old, "p_old" = p_old,
-           "r_localOut" = localOut['r_out'], "p_localOut" = localOut['p_out'],
+           "r_localOut" = localOut['r_out'], "p_localOut" = localOut['p_out'], 
            "r_transOut" = transOut['r_out'], "p_transOut" = transOut['p_out'],
            "r_hotspotOut" = hotspotOut['r_out'], "p_hotspotOut" = hotspotOut['p_out']))
 }
@@ -84,11 +89,30 @@ geneticR_oldLocalTransHotspotRegressOut = lapply(colnames(traitCommonSegregants_
                             condition_i = condition_i,
                             mc.cores = parallelly::availableCores())
          effects_i = as.data.frame(do.call(rbind, effects_i))
-         colnames(effects_i) = c("r", "p", "r_localOut", "p_localOut", "r_transOut", "p_transOut",
+         colnames(effects_i) = c("r", "p", 
+                                 "r_localOut", "p_localOut",
+                                 "r_transOut", "p_transOut",
                                  "r_hotspotOut", "p_hotspotOut")
          effects_i$gene = sigGenes
+         
+         # #save nulls for condition_i
+         # 
+         # effects_i_nulls = parallel::mclapply(sigGenes,
+         #                                      FUN = regressOutQTLEffectsAndComputePhenoR_nulls,
+         #                                      condition_i = condition_i,
+         #                                      mc.cores = parallelly::availableCores())
+         # 
+         # if(!dir.exists(paste0(results_dir, RObj_dir, "nullsForLocalVsTransVsHotspot/"))){
+         #   dir.create(paste0(results_dir, RObj_dir, "nullsForLocalVsTransVsHotspot/"))
+         # } else {FALSE}
+         # 
+         # save(effects_i_nulls, file = paste0(results_dir, RObj_dir, 
+         #                                     "nullsForLocalVsTransVsHotspot/",
+         #                                     paste0("nulls_", condition_i, ".rda")))
+         
          return(effects_i)
        })
+
 names(geneticR_oldLocalTransHotspotRegressOut) = colnames(traitCommonSegregants_std)
 
 save(geneticR_oldLocalTransHotspotRegressOut, file = paste0(results_dir, RObj_dir, "geneticR_afterRegressingOutLocalTransHotspotEffects.rda"))
@@ -156,5 +180,15 @@ wilcox.test(abs(df_all$r), abs(df_all$r_transOut), paired = TRUE)
 wilcox.test(abs(df_all$r), abs(df_all$r_hotspotOut), paired = TRUE)$p.value
 # p < 2e-16
 
+
+###
+nEQTL = eQTL_Albert2018 %>% group_by(gene) %>% summarize(nCis = sum(cis == "TRUE"),
+                                                         nTrans = sum(cis == "FALSE"))
+
+df = as.data.frame(do.call(rbind, geneticR_oldLocalTransHotspotRegressOut))
+df$nLocal = nEQTL$nCis[match(df$gene, nEQTL$gene)]
+df$nTrans = nEQTL$nTrans[match(df$gene, nEQTL$gene)]
+
+summary(df)
 
 

@@ -9,7 +9,6 @@ plotting_dir = "plots_092522/"
 #load the random marker set ----
 load(file = paste0(results_dir, RObj_dir, "randomMarkersForRandomHeritabilityEstimate.rda"))
 load(file = paste0(results_dir, RObj_dir, "dataWithRPAndSEForExpressionAndGrowth.rda"))
-load(file= paste0(results_dir, RObj_dir, "hotspotEffectCorrelations.rda"))
 load(paste0(results_dir, RObj_dir, "hotspotEffectCorrelations_recomputed_onlyMyScanningMethod.rda"))
 load(paste0(results_dir, RObj_dir, "phenotypicCorrelationTable_pearson.rda"))
 
@@ -34,7 +33,12 @@ medianHotspotEffect_i = lapply(listOfAllRandomHotspotR,
 
 medianHotspotEffect_i = do.call(rbind, medianHotspotEffect_i)
 
+  # save the random HECs
+  save(medianHotspotEffect_i, file = paste0(results_dir, RObj_dir, "HEC_medianRandomEstimates.rda"))
+
+
 #plot the median hotspot effect - actual vs random hotspots like in heritability plot
+load(file= paste0(results_dir, RObj_dir, "hotspotEffectCorrelations.rda"))
 medianHotspotEffect_actual = lapply(hotspotEffectCorrelations, 
                                     FUN = function(condition_set){
                                       colnames(condition_set) = c("r", "p", "gene", "q")

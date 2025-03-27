@@ -8,6 +8,18 @@ RObj_dir = "RObjects_092522/"
 #load data -----
 load(paste0(results_dir, RObj_dir, "dataAfterPrep_120821.rda"))
 
+#diagnostics ----
+##get number of complete cases for each of the gene expression values and the growth values
+complete_expression = apply(expressionCommonSegregants_batchODCorrected_std,
+                            2, FUN = function(gene_i){
+                              return(length(which(complete.cases(gene_i) == TRUE)))
+                            })
+
+complete_growth = apply(traitCommonSegregants_std,
+                        2, FUN = function(trait_i){
+                              return(length(which(complete.cases(trait_i) == TRUE)))
+                            })
+
 #compute phenotypic correlations -----
 r_expressionGrowth = function(gene, condition){
   traitValues = unlist(traitCommonSegregants_std[condition])

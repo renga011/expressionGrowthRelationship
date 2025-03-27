@@ -2,6 +2,8 @@
 
 library(dplyr)
 library(org.Sc.sgd.db)
+library(readr)
+library(ggpubr)
 
 #GLOBAL variables ----
 results_dir = "results/updates_qValue_justPhenoGeneticCorFilters_112421/"
@@ -117,5 +119,47 @@ GO_FT = function(GOterm, geneList,
             file = paste0(results_dir, otherFiles_dir, "supplementaryTables/",
                           "Supplementary Table 6 - mediationResults_IRA2_H2O2.xlsx"))
  
- 
- 
+ # plot
+ df_i = dplyr::filter(mediationEstimatesForAllHotspotTargets, p < 0.05 & fdr < 0.05 | gene_stdName == "MSN2")
+  
+  df_i$label = ifelse(df_i$gene_stdName %in% c("MSN2", "PNC1", "TPS2", "HSP12"), TRUE, FALSE)
+  
+  df_i = df_i %>%
+    arrange(propMediated)
+  
+  # df_i$cumulative_fraction = 1:nrow(df_i)
+  # df_i$cumulative_frequency = cumsum(df_i$cumulative_fraction)/sum(df_i$cumulative_fraction)
+  
+  df_i_MSN2 = dplyr::filter(df_i, MSN2_documentedTarget == "TRUE")
+  df_i_noMSN2 = dplyr::filter(df_i, MSN2_documentedTarget == "FALSE")
+  
+  df_i_MSN2$cumulative_fraction = 1:nrow(df_i_MSN2)
+  df_i_MSN2$cumulative_frequency =cumsum(df_i_MSN2$cumulative_fraction)/sum(df_i_MSN2$cumulative_fraction)
+  
+  df_i_noMSN2$cumulative_fraction = 1:nrow(df_i_noMSN2)
+  df_i_noMSN2$cumulative_frequency =cumsum(df_i_noMSN2$cumulative_fraction)/sum(df_i_noMSN2$cumulative_fraction)
+  
+  df_i = rbind(df_i_MSN2, df_i_noMSN2)
+  
+  pdf(paste0(results_dir, plotting_dir, "revision_figures_CellGenomics/", "R3C10_fig7BRevised.pdf"))
+  
+  ggplot(df_i, aes(x = propMediated, y = cumulative_frequency, 
+                   color = factor(MSN2_documentedTarget), 
+                   size = factor(label))) +
+    geom_point(shape = 21) +
+   #geom_jitter(position = position_jitter(width = 0.02, height = 0.02), shape = 21)+
+    scale_color_manual(values = c("TRUE" = "deeppink4", "FALSE" = "blue4")) +  # Customize colors if needed
+    scale_size_manual(values = c("TRUE" = 4, "FALSE" = 2)) +
+    geom_vline(xintercept = 0, color = "black") +
+    #facet_wrap(~MSN2_documentedTarget) +
+    theme_bw() +
+    theme(legend.position = "none") +
+    labs(
+      x = "propMediated",
+      y = "Cumulative Distribution",
+      color = "MSN2 Documented Target",
+      size = "Label"
+    )
+  
+  dev.off()
+  

@@ -198,3 +198,72 @@ save(GO_GC_plus, GO_GC_minus, GO_EQTLEC_plus, GO_EQTLEC_minus,
      GO_HEC_plus, GO_HEC_minus,
      file = paste0(results_dir, RObj_dir, "GO_geneticCorrelations_QTLEffectsCorrelation_fdr5_HotspoteffectCorrelation_plusMinus_allP_myOwnFishersTest.rda"))
 
+
+## Reviewer analysis -----
+# Dont do the GO term binning into positive and negative. Just do GO term with significant gene sets for each of the analysis
+
+GO_GC = lapply(colnames(traitCommonSegregants_std),
+                    FUN = function(condition_i){
+                      print(condition_i)
+                      df = phenotypicCorrelations[[condition_i]]
+                      sigGenes_i = df$gene[which(df$p < 0.05 & df$q < 0.05)]
+                      
+                      GO_i = lapply(row.names(GoSlimTerms),
+                                    FUN = function(GOTerm_i){
+                                      GO_FT_i = GO_FT(GOTerm_i,
+                                                      sigGenes_i)
+                                      return(GO_FT_i)
+                                    })
+                      GO_i = as.data.frame(do.call(rbind, GO_i))
+                      GO_i$q = p.adjust(GO_i$p, method = "fdr")
+                      table = as.data.frame(cbind(GoSlimTerms, GO_i))
+                      table$condition = condition_i
+                      
+                      return(table)
+                    })
+
+names(GO_GC) = colnames(traitCommonSegregants_std)
+
+GO_EQTLEC = lapply(colnames(traitCommonSegregants_std),
+                        FUN = function(condition_i){
+                          print(condition_i)
+                          df = QEC[[condition_i]]
+                          sigGenes_i = df$gene[which(df$q_QEC < 0.2)]
+                          
+                          GO_i = lapply(row.names(GoSlimTerms),
+                                        FUN = function(GOTerm_i){
+                                          GO_FT_i = GO_FT(GOTerm_i,
+                                                          sigGenes_i)
+                                          return(GO_FT_i)
+                                        })
+                          GO_i = as.data.frame(do.call(rbind, GO_i))
+                          table = as.data.frame(cbind(GoSlimTerms, GO_i))
+                          table$condition = condition_i
+                          return(table)
+                        })
+
+names(GO_EQTLEC) = colnames(traitCommonSegregants_std)
+
+GO_HEC = lapply(colnames(traitCommonSegregants_std),
+                     FUN = function(condition_i){
+                       print(condition_i)
+                       df = hotspotEffectCorrelations[[condition_i]]
+                       colnames(df) = c("r", "p", "gene", "q")
+                       sigGenes_i = df$gene[which(df$p < 0.05 & df$q < 0.05)]
+                       
+                       GO_i = lapply(row.names(GoSlimTerms),
+                                     FUN = function(GOTerm_i){
+                                       GO_FT_i = GO_FT(GOTerm_i,
+                                                       sigGenes_i)
+                                       return(GO_FT_i)
+                                     })
+                       GO_i = as.data.frame(do.call(rbind, GO_i))
+                       table = as.data.frame(cbind(GoSlimTerms, GO_i))
+                       table$condition = condition_i
+                       return(table)
+                     })
+
+names(GO_HEC) = colnames(traitCommonSegregants_std)
+
+save(GO_GC, GO_EQTLEC, GO_HEC,
+     file = paste0(results_dir, RObj_dir, "GO_geneticCorrelations_QTLEffectsCorrelation_fdr5_HotspoteffectCorrelation_noDirections_allP_myOwnFishersTest.rda"))
