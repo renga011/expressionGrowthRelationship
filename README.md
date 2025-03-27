@@ -95,7 +95,7 @@ Compute the expression and growth effects at all eQTLs of a gene and perform wei
 10.2. Analyze and plot mediation results.
 
 ### 11. Cell Genomics revision
-Scripts addressing different reviewer comments. The scripts are indexed to identify the reviewer comment (eg:Reviewer 1 comment 1 will be indexed with R1C1)
+Scripts addressing different reviewer comments. The scripts are indexed to identify the reviewer comment (eg: Reviewer 1 comment 1 will be indexed with R1C1)
 
 
 
